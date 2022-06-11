@@ -32,14 +32,14 @@ contract Bank {
     }
 
     function withdraw(uint256 _amount) public {
-        require(balance[msg.sender] > 0);
+        require(balance[msg.sender] >= _amount);
         dai.transfer(msg.sender, _amount);
         tvd -= _amount;
         balance[msg.sender] -= _amount;
     }
 
     function transfer(address _to, uint256 _amount) public {
-        require(balance[msg.sender] > _amount);
+        require(balance[msg.sender] >= _amount);
         balance[msg.sender] -= _amount;
         balance[_to] += _amount;
     }

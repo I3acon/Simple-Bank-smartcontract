@@ -13,15 +13,15 @@ async function main() {
 
   console.log("Bank Contract deployed to:", bank.address);
 
-  //  await hre.network.provider.request({
-  //   method: "hardhat_impersonateAccount",
-  //   params: [config.rich.address],
-  // });
-  // const signer = await ethers.getSigner(config.rich.address);
-  // const daiContract = new ethers.Contract(config.contracts.dai.address, ERC20_ABI, signer);
+   await hre.network.provider.request({
+    method: "hardhat_impersonateAccount",
+    params: [config.rich.address],
+  });
+  const signer = await ethers.getSigner(config.rich.address);
+  const daiContract = new ethers.Contract(config.contracts.dai.address, ERC20_ABI, signer);
 
-  // await daiContract.connect(signer).transfer(config.account0.address, ethers.utils.parseEther("1000"));
-  // const accountBalance = await daiContract.balanceOf(config.account0.address);
+  await daiContract.connect(signer).transfer(config.account0.address, ethers.utils.parseEther("1000"));
+  const accountBalance = await daiContract.balanceOf(config.account0.address);
 
 }
 

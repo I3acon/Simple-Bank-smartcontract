@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import console from "console";
+import console, { assert } from "console";
 import ERC20_ABI from "../constant/ERC20.json";
 import Bank_ABI from "../artifacts/contracts/Bank.sol/Bank.json";
 import config from "../config.json";
@@ -31,62 +31,64 @@ const daiContract = new ethers.Contract(
   wallet
 );
 
-//Init balance function
-const balance = async () => {
-  const balance = await daiContract.balanceOf(config.account0.address) / 1e18;
-  const bankBalance = +await BankContract.returnBalance(config.account0.address)/1e18;
-  const tvd = +await BankContract.returnTVD()/1e18;
-  const recipientsWalletBalance = await daiContract.balanceOf(config.account1.address) / 1e18;
-  const recipientsBankBalance = +await BankContract.returnBalance(config.account1.address)/1e18;
-  console.log("Account 0 dai balance (Wallet):",balance);
-  console.log("Account 0 dai balance (Bank):",bankBalance);
-  console.log("Account 1 dai balance (Wallet):",recipientsWalletBalance);
-  console.log("Account 1 dai balance (Bank):",recipientsBankBalance);
-  console.log("Bank TVD:",tvd);
-}
+
+//Happy Situation
 
 describe("Deposit Dai to contract", function () {
   it("Should deposit dai", async function () {
-  console.log("\n Balance before deposit")
-  await balance()
   await daiContract.approve(config.contracts.bank.address , ethers.utils.parseEther("1000"))
   await BankContract.deposit(ethers.utils.parseEther("1000"))
-  console.log("\n Balance after deposit")
-  await balance()
+  const result = await BankContract.returnBalance(config.account0.address)/1e18;
+  expect(result).to.be.equal(1000);
   });
 });
 
 describe("Transfer DAI ", function () {
-  it("Should transfer dai", async function () {
-  console.log("\n Balance before transfer")
-  await balance()
+  it("Should transfer dai from account 0 to account 1", async function () {
   await BankContract.transfer(config.account1.address,ethers.utils.parseEther("100"))
-  console.log("\n Balance after transfer")
-  await balance()
+  const result = await BankContract.returnBalance(config.account0.address)/1e18;
+  expect(result).to.be.equal(900);
+  const result1 = await BankContract.returnBalance(config.account1.address)/1e18;
+  expect(result1).to.be.equal(100);
   });
 });
 
 describe("Withdraw Dai from contract (Account 0)", function () {
-  it("Should deposit dai", async function () {
-  console.log("\n Balance before withdraw")
-  await balance()
+  it("Should Withdraw dai from account 0", async function () {
   await BankContract.withdraw(ethers.utils.parseEther("900"))
-  console.log("\n Balance after withdraw")
-  await balance()
+  const result = await BankContract.returnBalance(config.account0.address)/1e18;
+  expect(result).to.be.equal(0);
   });
 });
 
 describe("Withdraw Dai from contract (Account 1)", function () {
-  it("Should deposit dai", async function () {
-  console.log("\n Balance before withdraw")
-  await balance()
+  it("Should Withdraw dai from account 1", async function () {
   await BankContractAct1.withdraw(ethers.utils.parseEther("100"))
-  console.log("\n Balance after withdraw")
-  await balance()
+  const result = await BankContract.returnBalance(config.account1.address)/1e18;
+  expect(result).to.be.equal(0);
   });
 });
 
+//Unhappy Situation
 
+describe("Deposit Dai to contract", function () {
+  it("Should not deposit dai", async function () {
+  await daiContract.approve(config.contracts.bank.address , ethers.utils.parseEther("100000000"))
+  await expect(BankContract.deposit(ethers.utils.parseEther("100000000"))).to.be.reverted;
+  });
+});
+
+describe("Transfer DAI ", function () {
+  it("Should not transfer dai from account 0 to account 1", async function () {
+  await expect(BankContract.transfer(config.account1.address,ethers.utils.parseEther("100000000"))).to.be.reverted;
+  });
+});
+
+describe("Withdraw Dai from contract (Account 0)", function () {
+  it("Should not Withdraw dai from account 0", async function () {
+    await expect(BankContract.withdraw(ethers.utils.parseEther("100000000"))).to.be.reverted;
+  });
+});
 
 
 

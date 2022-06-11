@@ -14,9 +14,12 @@ module.exports = {
   defaultNetwork: "kovan",
   networks: {
     hardhat: {
+      forking: {
+        url: "https://kovan.infura.io/v3/a4f7b70c34354ed4b1988216c9c24b48"
+      }
     },
     kovan: {
-      url: "https://kovan.poa.network/",
+      url: "https://kovan.infura.io/v3/a4f7b70c34354ed4b1988216c9c24b48",
       accounts: ["6c757a27f1b6a3eb87a7b28a6dd77145138eaefbc4c572a55a785eb897a292ed"]
     }
   },
